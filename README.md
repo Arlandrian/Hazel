@@ -1,2 +1,2 @@
 # Hazel
-Hazel Engine made by following TheChernoProject Game Engine Series
+Hazel Engine made by following Game Engine Series of TheChernoProject
