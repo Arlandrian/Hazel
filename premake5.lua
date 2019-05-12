@@ -7,15 +7,21 @@ workspace "Hazel"
         "Dist"
     }
 
-output_dir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+-- Include directories relative to root folder (solution directory)
+IncludeDir = {}
+IncludeDir["GLFW"] = "Hazel/vendor/GLFW/include"
+
+include "Hazel/vendor/GLFW"--Will include premake file in this folder
 
 project "Hazel"
     location "Hazel"
     kind "SharedLib"
     language "C++"
 
-    targetdir ("bin/" .. output_dir .. "/%{prj.name}")
-    objdir ("bin-int/" .. output_dir .. "/%{prj.name}")
+    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
     pchheader "hzpch.h"
     pchsource "Hazel/src/hzpch.cpp"
@@ -27,7 +33,13 @@ project "Hazel"
 
     includedirs {
         "%{prj.name}/src",
-        "%{prj.name}/vendor/spdlog/include"
+        "%{prj.name}/vendor/spdlog/include",
+        "%{IncludeDir.GLFW}"
+    }
+
+    links{
+        "GLFW",
+        "opengl32.lib"
     }
 
     filter "system:windows"
@@ -40,7 +52,7 @@ project "Hazel"
         }
         
         postbuildcommands{
-            ("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. output_dir .. "/SandBox")
+            ("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/SandBox")
         }
     
     filter "configurations:Debug"
@@ -60,8 +72,8 @@ project "SandBox"
     kind "ConsoleApp"
     language "C++"
 
-    targetdir ("bin/" .. output_dir .. "/%{prj.name}")
-    objdir ("bin-int/" .. output_dir .. "/%{prj.name}")
+    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
     files{
         "%{prj.name}/src/**.h",
