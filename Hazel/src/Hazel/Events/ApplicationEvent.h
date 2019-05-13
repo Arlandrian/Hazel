@@ -26,6 +26,8 @@ namespace Hazel {
 		WindowCloseEvent(){ }
 
 		EVENT_CLASS_TYPE(WindowClose)
+		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+
 	};
 
 	class HAZEL_API AppTickEvent: public Event {
@@ -41,7 +43,7 @@ namespace Hazel {
 		AppUpdateEvent() { }
 
 		EVENT_CLASS_TYPE(AppTick)
-			EVENT_CLASS_CATEGORY(EventCategoryApplication)
+		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
 
 	class HAZEL_API AppRenderEvent: public Event {
@@ -49,7 +51,7 @@ namespace Hazel {
 		AppRenderEvent() { }
 
 		EVENT_CLASS_TYPE(AppTick)
-			EVENT_CLASS_CATEGORY(EventCategoryApplication)
+		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
 
 }

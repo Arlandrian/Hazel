@@ -20,11 +20,11 @@ namespace Hazel {
 
 	enum EventCategory {
 		None = 0,
-		EventCategoryApplication = BIT(0),
-		EventCategoryInput = BIT(1),
-		EventCategoryKeyboard = BIT(2),
-		EventCategoryMouse = BIT(3),
-		EventCategoryButton = BIT(4)
+		EventCategoryApplication	=BIT(0),
+		EventCategoryInput			=BIT(1),
+		EventCategoryKeyboard		=BIT(2),
+		EventCategoryMouse			=BIT(3),
+		EventCategoryButton			=BIT(4)
 	};
 	/*
 	Note: "#" at the front of definition argument type makes it returns it as a string apparently,
@@ -61,7 +61,7 @@ namespace Hazel {
 
 		template<typename T>
 		bool Dispatch(EventFn<T> func) {
-			if( m_Event.GetEventType() == T::GetStaticType ) {
+			if( m_Event.GetEventType() == T::GetStaticType() ) {
 				m_Event.m_Handled = func(*(T*)&m_Event);
 				return true;
 			}
