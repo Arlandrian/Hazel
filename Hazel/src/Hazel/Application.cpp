@@ -5,10 +5,15 @@
 #include "glad/glad.h"
 
 namespace Hazel {
+
 // Note: this will return a function like this => x(this); 
 #define BIND_EVENT_FN(x) std::bind(&x,this,std::placeholders::_1)
 
+	Application* Application::s_Instance = nullptr;
+
 	Application::Application() { 
+		HZ_CORE_ASSERT(!s_Instance, "Application already exist!");
+		s_Instance = this;
 	
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
