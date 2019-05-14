@@ -8,6 +8,7 @@ namespace Hazel {
 
 	class HAZEL_API Log {
 	public:
+	public:
 		static void Init();
 
 		inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
