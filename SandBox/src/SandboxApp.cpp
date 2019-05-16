@@ -1,9 +1,11 @@
 #include <Hazel.h>
+#include "imgui/imgui.h"
 
 #include <glm/vec3.hpp> // glm::vec3
 #include <glm/vec4.hpp> // glm::vec4
 #include <glm/mat4x4.hpp> // glm::mat4
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
+
 glm::mat4 camera(float Translate, glm::vec2 const & Rotate) {
 	glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.f);
 	glm::mat4 View = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -Translate));
@@ -13,11 +15,15 @@ glm::mat4 camera(float Translate, glm::vec2 const & Rotate) {
 	return Projection * View * Model;
 }
 
+//we make a static variable: static ImGuiContext* s_ImGuiContext;
+//in application and we set a getter to it and in the class that overrides OnAttach()
+//we write something like ImGui::SetCurrentContext(Application::GetImGuiContext());
+
 class ExampleLayer : public Hazel::Layer {
 public:
 	ExampleLayer() : Layer("Example") {
 		//auto cam = camera(5.0f, {0.5f,0.5f});
-
+		
 	}
 
 	void OnUpdate() override {
@@ -25,6 +31,12 @@ public:
 		//HZ_INFO("ExampleLayer::Update");
 		if( Hazel::Input::IsKeyPressed(HZ_KEY_TAB) )
 			HZ_TRACE("Tab key is pressed!");
+	}
+
+	void OnImGuiRender() override {
+		ImGui::Begin("Test");
+		ImGui::Text("Hello world!");
+		ImGui::End();
 	}
 
 	void OnEvent(Hazel::Event& event) override {
@@ -36,7 +48,6 @@ class Sandbox: public Hazel::Application {
 public:
 	Sandbox() {
 		PushLayer(new ExampleLayer());
-		PushOverlay(new Hazel::ImGuiLayer());
 	}
 
 	~Sandbox() {
