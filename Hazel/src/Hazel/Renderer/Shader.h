@@ -6,7 +6,7 @@ namespace Hazel {
 	class Shader {
 	public:
 		
-		virtual ~Shader() { };
+		virtual ~Shader() = default;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -15,7 +15,7 @@ namespace Hazel {
 
 		virtual void UploadUniformMat4(const std::string& name, const glm::mat4& matrix) const = 0;
 
-	private:
-		uint32_t m_RendererID;
+		virtual void UploadUniformFloat4(const std::string& name, const glm::vec4& values) const = 0;
+
 	};
 }
