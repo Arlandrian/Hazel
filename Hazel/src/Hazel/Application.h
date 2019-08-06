@@ -8,6 +8,8 @@
 
 #include "Hazel/ImGui/ImGuiLayer.h"
 
+#include "Hazel/Core/Timestep.h"
+
 
 namespace Hazel {
 
@@ -37,6 +39,7 @@ namespace Hazel {
 
 		LayerStack m_LayerStack;
 
+		float m_LastFrameTime = 0.0f;
 
 
 	private:
