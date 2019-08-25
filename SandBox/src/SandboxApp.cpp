@@ -1,16 +1,22 @@
 #include <Hazel.h>
+
+#include "Platform/OpenGL/OpenGLShader.h"
+#include "Platform/OpenGL/OpenGLTexture.h"
+
 #include "imgui/imgui.h"
 
-#include "glm/gtc/matrix_transform.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Platform/OpenGL/OpenGLShader.h"
+
+//#include "Hazel/Renderer/Texture.h"
 
 class ExampleLayer : public Hazel::Layer {
 public:
 	ExampleLayer() : Layer("Example") ,
-		m_Camera(-1.6f, 1.6f, -0.9f, 0.9f) {
+		m_Camera(-1.6f, 1.6f, -0.9f, 0.9f), m_CameraPosition(0.0f)
+	{
 		
 		// VertexArray
 		m_VertexArray.reset(Hazel::VertexArray::Create());
@@ -50,25 +56,28 @@ public:
 
 		m_SqrVertexArray.reset(Hazel::VertexArray::Create());
 
-		float SquareVertices[3 * 4] = {
-			-0.5f,-0.5f, 0.0f,
-			 0.5f,-0.5f, 0.0f,
-			 0.5f, 0.5f, 0.0f,
-			-0.5f, 0.5f, 0.0f
+		float squareVertices[5 * 4] = {
+			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+			 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+			 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
+			-0.5f,  0.5f, 0.0f, 0.0f, 1.0f
 		};
 
-		std::shared_ptr<Hazel::VertexBuffer> squareVB;
-		squareVB.reset(Hazel::VertexBuffer::Create(SquareVertices, sizeof(SquareVertices)));
+		Hazel::Ref<Hazel::VertexBuffer> squareVB;
+		squareVB.reset(Hazel::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
 
-		Hazel::BufferLayout SqrLayout = {{ Hazel::ShaderDataType::Float3, "a_Position" }};
-		squareVB->SetLayout(SqrLayout);
+		Hazel::BufferLayout sqrBufferLayut = {
+			{ Hazel::ShaderDataType::Float3, "a_Position" },
+			{ Hazel::ShaderDataType::Float2, "a_TexCoord" }
+		};
+		squareVB->SetLayout(sqrBufferLayut);
 		m_SqrVertexArray->AddVertexBuffer(squareVB);
 
 		// Index Buffer
 		uint32_t squareIndices[3 * 2] = {
 			0,1,2,2,3,0
 		};
-		std::shared_ptr<Hazel::IndexBuffer> squareIB;
+		Hazel::Ref<Hazel::IndexBuffer> squareIB;
 		squareIB.reset(Hazel::IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t)));
 		m_SqrVertexArray->SetIndexBuffer(squareIB);
 
@@ -145,12 +154,54 @@ public:
 
 		m_FlatColorShader.reset(Hazel::Shader::Create(flatShaderVertexSrc, flatShaderFragmentSrc));
 
+		// Shader
+		std::string textureShaderVertexSrc = R"(
+			#version 330 core
+			
+			layout(location=0) in vec3 a_Position;
+			layout(location=1) in vec2 a_texCoord;
+
+			uniform mat4 u_ViewProjection;
+			uniform mat4 u_Transform;
+
+			out vec3 v_Position;
+			out vec2 v_TexCoord;
+			void main(){
+				v_Position = a_Position;
+				v_TexCoord = a_texCoord;
+
+				gl_Position = u_ViewProjection *u_Transform* vec4(a_Position, 1.0);
+			}
+			
+		)";
+
+		std::string textureShaderFragmentSrc = R"(
+			#version 330 core
+			
+			layout(location=0) out vec4 color;
+			in vec3 v_Position;
+			in vec2 v_TexCoord;
+
+			uniform sampler2D u_Texture;
+
+			void main(){
+
+				color = texture(u_Texture,v_TexCoord);
+
+			}
+			
+		)";
+
+		m_TextureShader.reset(Hazel::Shader::Create(textureShaderVertexSrc, textureShaderFragmentSrc));
+
+
+		m_Texture = Hazel::Texture2D::Create("assets/textures/Checkerboard.png");//ChernoLogo.png
+		m_ChernoLogoTexture = Hazel::Texture2D::Create("assets/textures/ChernoLogo.png");
+		std::dynamic_pointer_cast<Hazel::OpenGLShader>(m_TextureShader)->Bind();
+		std::dynamic_pointer_cast<Hazel::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
 	}
 
 	void OnUpdate(Hazel::Timestep ts) override {
-		Hazel::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1});
-		Hazel::RenderCommand::Clear();
-
 		//Renderer::BeginScene(camera,lights,environment);
 
 		if( Hazel::Input::IsKeyPressed(HZ_KEY_UP) ) {
@@ -167,7 +218,6 @@ public:
 
 		}
 
-
 		if( Hazel::Input::IsKeyPressed(HZ_KEY_A) ) {
 			m_CameraRotation -= m_CameraRotationSpeed * ts;
 
@@ -175,6 +225,9 @@ public:
 			m_CameraRotation += m_CameraRotationSpeed * ts;
 
 		}
+
+		Hazel::RenderCommand::SetClearColor({0.1f, 0.1f, 0.1f, 1});
+		Hazel::RenderCommand::Clear();
 
 		m_Camera.setPosition(m_CameraPosition);
 
@@ -205,11 +258,21 @@ public:
 
 				Hazel::Renderer::Submit(shader, m_SqrVertexArray, transform);
 			}
-			
-
 		}
+		// Triangle
+		//Hazel::Renderer::Submit(m_Shader, m_VertexArray);
 
-		Hazel::Renderer::Submit(m_Shader, m_VertexArray);
+		m_Texture->Bind();
+		//std::dynamic_pointer_cast<Hazel::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
+
+		Hazel::Renderer::Submit(m_TextureShader, m_SqrVertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+
+
+		m_ChernoLogoTexture->Bind(0);
+		//std::dynamic_pointer_cast<Hazel::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 1);
+
+
+		Hazel::Renderer::Submit(m_TextureShader, m_SqrVertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
 
 		Hazel::Renderer::EndScene();
@@ -240,11 +303,11 @@ private:
 	std::shared_ptr<Hazel::Shader> m_Shader;
 	std::shared_ptr<Hazel::VertexArray> m_VertexArray;
 					
-	std::shared_ptr<Hazel::Shader> m_FlatColorShader;
+	std::shared_ptr<Hazel::Shader> m_FlatColorShader, m_TextureShader;
 	std::shared_ptr<Hazel::VertexArray> m_SqrVertexArray;
 
 	Hazel::OrthographicCamera m_Camera;
-	glm::vec3 m_CameraPosition = {0.0f,0.0f,0.0f};
+	glm::vec3 m_CameraPosition;
 
 	glm::vec4 m_SquareColor = {0.8f, 0.2f, 0.3f,1.0f};
 
@@ -252,6 +315,7 @@ private:
 	float m_CameraRotation = 0.0f;
 	float m_CameraRotationSpeed = 45.0f;
 
+	Hazel::Ref<Hazel::Texture2D> m_Texture,m_ChernoLogoTexture;
 };
 
 class Sandbox: public Hazel::Application {
