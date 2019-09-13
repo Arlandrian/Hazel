@@ -1,7 +1,8 @@
 #include <Hazel.h>
-
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
+
+#include "Hazel/Renderer/Shader.h"
 
 #include "imgui/imgui.h"
 
@@ -118,7 +119,7 @@ public:
 			
 		)";
 
-		m_Shader.reset(Hazel::Shader::Create(vertexSrc, fragmentSrc));
+		m_Shader = Hazel::Shader::Create("VertexPosColor", vertexSrc, fragmentSrc);
 
 		// Shader
 		std::string flatShaderVertexSrc = R"(
@@ -152,53 +153,15 @@ public:
 			
 		)";
 
-		m_FlatColorShader.reset(Hazel::Shader::Create(flatShaderVertexSrc, flatShaderFragmentSrc));
+		m_FlatColorShader = Hazel::Shader::Create("Flat Color Shader", flatShaderVertexSrc, flatShaderFragmentSrc);
 
-		// Shader
-		std::string textureShaderVertexSrc = R"(
-			#version 330 core
-			
-			layout(location=0) in vec3 a_Position;
-			layout(location=1) in vec2 a_texCoord;
-
-			uniform mat4 u_ViewProjection;
-			uniform mat4 u_Transform;
-
-			out vec3 v_Position;
-			out vec2 v_TexCoord;
-			void main(){
-				v_Position = a_Position;
-				v_TexCoord = a_texCoord;
-
-				gl_Position = u_ViewProjection *u_Transform* vec4(a_Position, 1.0);
-			}
-			
-		)";
-
-		std::string textureShaderFragmentSrc = R"(
-			#version 330 core
-			
-			layout(location=0) out vec4 color;
-			in vec3 v_Position;
-			in vec2 v_TexCoord;
-
-			uniform sampler2D u_Texture;
-
-			void main(){
-
-				color = texture(u_Texture,v_TexCoord);
-
-			}
-			
-		)";
-
-		m_TextureShader.reset(Hazel::Shader::Create(textureShaderVertexSrc, textureShaderFragmentSrc));
+		auto textureShader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
 
 
 		m_Texture = Hazel::Texture2D::Create("assets/textures/Checkerboard.png");//ChernoLogo.png
 		m_ChernoLogoTexture = Hazel::Texture2D::Create("assets/textures/ChernoLogo.png");
-		std::dynamic_pointer_cast<Hazel::OpenGLShader>(m_TextureShader)->Bind();
-		std::dynamic_pointer_cast<Hazel::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
+		std::dynamic_pointer_cast<Hazel::OpenGLShader>(textureShader)->Bind();
+		std::dynamic_pointer_cast<Hazel::OpenGLShader>(textureShader)->UploadUniformInt("u_Texture", 0);
 	}
 
 	void OnUpdate(Hazel::Timestep ts) override {
@@ -265,14 +228,16 @@ public:
 		m_Texture->Bind();
 		//std::dynamic_pointer_cast<Hazel::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
 
-		Hazel::Renderer::Submit(m_TextureShader, m_SqrVertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+		auto textureShader = m_ShaderLibrary.Get("Texture");
+
+		Hazel::Renderer::Submit(textureShader, m_SqrVertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
 
 		m_ChernoLogoTexture->Bind(0);
 		//std::dynamic_pointer_cast<Hazel::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 1);
 
 
-		Hazel::Renderer::Submit(m_TextureShader, m_SqrVertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+		Hazel::Renderer::Submit(textureShader, m_SqrVertexArray, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
 
 		Hazel::Renderer::EndScene();
@@ -300,10 +265,11 @@ public:
 		return false;
 	}
 private:
+	Hazel::ShaderLibrary m_ShaderLibrary;
 	std::shared_ptr<Hazel::Shader> m_Shader;
 	std::shared_ptr<Hazel::VertexArray> m_VertexArray;
 					
-	std::shared_ptr<Hazel::Shader> m_FlatColorShader, m_TextureShader;
+	std::shared_ptr<Hazel::Shader> m_FlatColorShader;
 	std::shared_ptr<Hazel::VertexArray> m_SqrVertexArray;
 
 	Hazel::OrthographicCamera m_Camera;
