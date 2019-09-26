@@ -25,6 +25,7 @@
 
 
 #include "Hazel/Renderer/OrthographicCamera.h"
+#include "Hazel/OrthographicCameraController.h"
 // -----------------------------
 
 // ---Entry Point---------------

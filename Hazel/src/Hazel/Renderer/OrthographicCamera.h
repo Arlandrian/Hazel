@@ -6,6 +6,7 @@ namespace Hazel {
 	class OrthographicCamera {
 	public:
 		OrthographicCamera(float left, float right, float bottom, float top);
+		void SetProjection(float left, float right, float bottom, float top);
 
 
 
@@ -18,6 +19,7 @@ namespace Hazel {
 			m_Rotation = rotation; RecalculateViewMatrix();
 		}
 		const float GetRotation() { return m_Rotation; };
+
 
 		const glm::mat4& GetViewMatrix() { return m_ViewMatrix; }
 		const glm::mat4& GetProjectionMatrix() { return m_ProjectionMatrix; }
