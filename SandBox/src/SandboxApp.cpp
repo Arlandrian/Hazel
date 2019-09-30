@@ -233,6 +233,12 @@ public:
 
 		m_CameraController.OnEvent(event);
 
+		if (event.GetEventType() == Hazel::EventType::WindowResize) {
+			auto& re = (Hazel::WindowResizeEvent&) event;
+			//float zoom = (float)re.GetWidth() /1280.0f;
+			//m_CameraController.SetZoomLevel(zoom);
+		}
+
 		//Hazel::EventDispatcher dispatcher(event);
 		//dispatcher.Dispatch<Hazel::KeyPressedEvent>(HZ_BIND_EVENT_FN(ExampleLayer::OnKeyPressedEvent));
 
