@@ -226,7 +226,6 @@ public:
 
 		ImGui::End();
 
-
 	}
 
 	void OnEvent(Hazel::Event& event) override {
