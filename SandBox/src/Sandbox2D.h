@@ -18,6 +18,6 @@ private:
 	std::shared_ptr<Hazel::Shader> m_FlatColorShader;
 	glm::vec4 m_SquareColor = { 0.8f, 0.2f, 0.3f,1.0f };
 	std::shared_ptr<Hazel::VertexArray> m_SquareVA;
-
+	Hazel::Ref<Hazel::Texture2D> m_CheckerboardTexture;
 
 };
