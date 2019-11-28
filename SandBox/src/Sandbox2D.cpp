@@ -2,7 +2,6 @@
 #include "imgui/imgui.h"
 
 #include <glm/gtc/matrix_transform.hpp>
-
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Platform/OpenGL/OpenGLShader.h"
@@ -37,7 +36,7 @@ void Sandbox2D::OnUpdate(Hazel::Timestep ts) {
 	Hazel::Renderer2D::DrawQuad({ -1.0f,0.0f }, { 1.0f,1.0f }, { 0.8f, 0.3f, 0.2f, 1.0f }); 
 	Hazel::Renderer2D::DrawQuad({ 1.0f,-0.50f }, { 1.5f,0.75f }, { 0.2f, 0.3f, 0.9f, 1.0f });
 
-	Hazel::Renderer2D::DrawQuad({ 0.0f,0.0f, -0.1f }, { 10.0f, 10.0f }, m_CheckerboardTexture);
+	Hazel::Renderer2D::DrawQuad({ 0.0f,0.0f, -0.1f }, { 15.0f, 15.0f }, m_CheckerboardTexture);
 
 	Hazel::Renderer2D::EndScene();
 
